@@ -1,0 +1,202 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Weight Prediction</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            padding: 35px;
+            width: 380px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #5366c9;
+        }
+
+        #result {
+            margin-top: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #error {
+            margin-top: 15px;
+            color: red;
+            font-size: 14px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Weight Predictor</h1>
+
+        <p>Predict your weight using your height</p>
+
+        <form id="predictionForm">
+
+            <label for="height">Enter Height (in feet)</label>
+
+            <input
+                type="number"
+                id="height"
+                placeholder="Example: 170"
+                min="1"
+                step="any"
+                required
+            >
+
+            <button type="submit" id="predictBtn">
+                Predict Weight
+            </button>
+
+        </form>
+
+        <div id="result"></div>
+
+        <div id="error"></div>
+
+    </div>
+
+
+    <script>
+
+        const form = document.getElementById("predictionForm");
+
+        form.addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const height = document.getElementById("height").value;
+
+            const result = document.getElementById("result");
+
+            const error = document.getElementById("error");
+
+            const button = document.getElementById("predictBtn");
+
+            result.innerHTML = "";
+            error.innerHTML = "";
+
+            if (!height || Number(height) <= 0) {
+                error.innerHTML = "Please enter a valid height.";
+                return;
+            }
+
+            button.disabled = true;
+            button.innerText = "Predicting...";
+
+            try {
+
+                const response = await fetch("/predict", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        height: Number(height)
+                    })
+
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Prediction failed");
+                }
+
+                result.innerHTML =
+                    "Predicted Weight: " +
+                    data.predicted_weight +
+                    " kg";
+
+            }
+
+            catch (err) {
+
+                error.innerHTML = err.message;
+
+            }
+
+            finally {
+
+                button.disabled = false;
+                button.innerText = "Predict Weight";
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
